@@ -1,56 +1,71 @@
-﻿// COMPLETE API SERVICE - With ALL functions
-const SHEETDB_URL = import.meta.env.VITE_SHEETDB_URL || 'https://sheetdb.io/api/v1/gd21pj5b246g5';
-
-// Helper function for fetching
-async function fetchSheet(sheetName) {
-  try {
-    console.log(`📡 Fetching ${sheetName}...`);
-    const response = await fetch(`${SHEETDB_URL}?sheet=${sheetName}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    console.log(`✅ ${sheetName}:`, data?.length || 0, 'records');
-    return data || [];
-  } catch (error) {
-    console.error(`❌ Error fetching ${sheetName}:`, error);
-    return [];
-  }
-}
+﻿// OPENSHEET API SERVICE - 100% FREE!
+const OPENSHEET_URL = 'https://opensheet.elk.sh/1ZUC_FHzW3Y_KlmOMUHRbwS8IQivySeuLwMrb4XM0Wq0';
 
 export const api = {
-  // USERS
-  getUsers: async () => fetchSheet('Users'),
-  
-  // STUDENTS
-  getStudents: async () => fetchSheet('Students'),
-  
-  // COURSES
-  getCourses: async () => fetchSheet('Courses'),
-  
-  // ENROLLMENTS
-  getEnrollments: async () => fetchSheet('Enrollments'),
-  
-  // ATTENDANCE
-  getAttendance: async () => fetchSheet('AttendanceSummary'),
-  
-  // MATERIALS
-  getMaterials: async () => fetchSheet('Materials'),
-  
-  // SCHEDULE
-  getSchedule: async () => fetchSheet('Schedule'),
-  
-  // DEADLINES
-  getDeadlines: async () => fetchSheet('Deadlines'),
-  
-  // ANNOUNCEMENTS
-  getAnnouncements: async () => fetchSheet('Announcements'),
-  
-  // NOTIFICATIONS
-  getStudentNotifications: async () => fetchSheet('StudentNotifications'),
-  
-  // TEST CONNECTION
+  // Users
+  getUsers: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Users);
+    return response.json();
+  },
+
+  // Students
+  getStudents: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Students);
+    return response.json();
+  },
+
+  // Courses
+  getCourses: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Courses);
+    return response.json();
+  },
+
+  // Enrollments
+  getEnrollments: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Enrollments);
+    return response.json();
+  },
+
+  // Attendance
+  getAttendance: async () => {
+    const response = await fetch(${OPENSHEET_URL}/AttendanceSummary);
+    return response.json();
+  },
+
+  // Materials
+  getMaterials: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Materials);
+    return response.json();
+  },
+
+  // Schedule
+  getSchedule: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Schedule);
+    return response.json();
+  },
+
+  // Deadlines
+  getDeadlines: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Deadlines);
+    return response.json();
+  },
+
+  // Announcements
+  getAnnouncements: async () => {
+    const response = await fetch(${OPENSHEET_URL}/Announcements);
+    return response.json();
+  },
+
+  // Notifications
+  getStudentNotifications: async () => {
+    const response = await fetch(${OPENSHEET_URL}/StudentNotifications);
+    return response.json();
+  },
+
+  // Test connection
   testConnection: async () => {
     try {
-      const response = await fetch(SHEETDB_URL);
+      const response = await fetch(${OPENSHEET_URL}/Users);
       return response.ok;
     } catch {
       return false;
