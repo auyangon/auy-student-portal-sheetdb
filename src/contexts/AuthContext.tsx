@@ -1,6 +1,12 @@
 ﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
-import type { User, Student, AuthUser } from '../types';
+
+interface AuthUser {
+  email: string;
+  studentId: string;
+  studentName?: string;
+  major?: string;
+}
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -8,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
+  error: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -15,32 +22,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('auy_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    if (savedUser) setUser(JSON.parse(savedUser));
     setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string) => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Get users from Users sheet
       const users = await api.getUsers();
-      const matchedUser = users.find((u: User) => u.email === email && u.password === password);
+      const matchedUser = users.find((u: any) => 
+        u.email?.toLowerCase() === email.toLowerCase() && 
+        u.password === password
+      );
       
-      if (!matchedUser) return false;
+      if (!matchedUser) {
+        setError('Invalid email or password');
+        return false;
+      }
 
-      // Get student details from Students sheet
       const students = await api.getStudents();
-      const student = students.find((s: Student) => s.email === email);
+      const student = students.find((s: any) => 
+        s.email?.toLowerCase() === email.toLowerCase()
+      );
 
-      const authUser: AuthUser = {
+      const authUser = {
         email: matchedUser.email,
-        studentId: matchedUser.studentId || student?.studentId || '',
+        studentId: student?.studentId || matchedUser.studentId || '',
         studentName: student?.studentName,
         major: student?.major
       };
@@ -48,9 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(authUser);
       localStorage.setItem('auy_user', JSON.stringify(authUser));
       return true;
-
-    } catch (error) {
-      console.error('Login error:', error);
+    } catch (err) {
+      setError('Connection error');
       return false;
     } finally {
       setLoading(false);
@@ -60,10 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     localStorage.removeItem('auy_user');
+    setError(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading, error }}>
       {children}
     </AuthContext.Provider>
   );

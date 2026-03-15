@@ -4,70 +4,100 @@ import { useData } from '../contexts/DataContext';
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
-  const { student, enrollments, loading } = useData();
+  const { student, enrollments, attendance, loading } = useData();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your data...</p>
-        </div>
-      </div>
-    );
+    return <div style={styles.loading}>Loading your data...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">AUY Student Portal</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user?.email}</span>
-              <button
-                onClick={logout}
-                className="px-4 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
+    <div style={styles.container}>
+      <nav style={styles.nav}>
+        <h2>AUY Portal</h2>
+        <div>
+          <span style={styles.email}>{user?.email}</span>
+          <button onClick={logout} style={styles.logout}>Logout</button>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Student Info */}
+      </nav>
+      
+      <main style={styles.main}>
         {student && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 className="text-lg font-semibold mb-2">Welcome, {student.studentName}!</h2>
-            <p className="text-gray-600">Student ID: {student.studentId}</p>
-            <p className="text-gray-600">Major: {student.major}</p>
+          <div style={styles.card}>
+            <h3>Welcome, {student.studentName}!</h3>
+            <p>Student ID: {student.studentId}</p>
+            <p>Major: {student.major}</p>
           </div>
         )}
 
-        {/* Enrollments */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h2 className="text-lg font-semibold mb-4">My Courses</h2>
-          {enrollments.length > 0 ? (
-            <div className="grid gap-4">
-              {enrollments.map((enrollment) => (
-                <div key={enrollment.enrollmentId} className="border rounded-lg p-4">
-                  <h3 className="font-medium">{enrollment.courseName}</h3>
-                  <p className="text-sm text-gray-600">Grade: {enrollment.grade}</p>
-                  <p className="text-sm text-gray-600">Credits: {enrollment.credits}</p>
-                </div>
-              ))}
+        <div style={styles.card}>
+          <h3>My Courses ({enrollments.length})</h3>
+          {enrollments.map((e, i) => (
+            <div key={i} style={styles.course}>
+              {e.courseName} - Grade: {e.grade}
             </div>
-          ) : (
-            <p className="text-gray-500">No courses found</p>
-          )}
+          ))}
+        </div>
+
+        <div style={styles.card}>
+          <h3>Attendance</h3>
+          {attendance.map((a, i) => (
+            <div key={i}>{a.courseId}: {a.percentage}%</div>
+          ))}
         </div>
       </main>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    minHeight: '100vh',
+    background: '#f5f5f5',
+  },
+  nav: {
+    background: 'white',
+    padding: '15px 30px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  email: {
+    marginRight: '20px',
+    color: '#666',
+  },
+  logout: {
+    padding: '8px 16px',
+    background: '#dc3545',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+  },
+  main: {
+    padding: '30px',
+    maxWidth: '1200px',
+    margin: '0 auto',
+  },
+  card: {
+    background: 'white',
+    padding: '20px',
+    borderRadius: '10px',
+    marginBottom: '20px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  course: {
+    padding: '10px',
+    borderBottom: '1px solid #eee',
+  },
+  loading: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
+    color: '#666',
+  },
 };
 
 export default Layout;
