@@ -5,17 +5,17 @@ export const api = {
   // Helper function for all sheets
   fetchSheet: async (sheetName) => {
     try {
-      const response = await fetch(${APPS_SCRIPT_URL}?sheet=);
+      const response = await fetch(`${APPS_SCRIPT_URL}?sheet=${sheetName}`);
       const result = await response.json();
       
       if (result.success) {
         return result.data;
       } else {
-        console.error(Error fetching :, result.error);
+        console.error(`Error fetching ${sheetName}:`, result.error);
         return [];
       }
     } catch (error) {
-      console.error(Error fetching :, error);
+      console.error(`Error fetching ${sheetName}:`, error);
       return [];
     }
   },
@@ -32,22 +32,22 @@ export const api = {
   getAnnouncements: async () => api.fetchSheet('Announcements'),
   getStudentNotifications: async () => api.fetchSheet('StudentNotifications'),
 
-  // Advanced features using the metadata
+  // Advanced features
   getWithFilter: async (sheetName, filterBy, filterValue) => {
-    const response = await fetch(${APPS_SCRIPT_URL}?sheet=&filterBy=&filterValue=);
+    const response = await fetch(`${APPS_SCRIPT_URL}?sheet=${sheetName}&filterBy=${filterBy}&filterValue=${filterValue}`);
     const result = await response.json();
     return result.success ? result.data : [];
   },
 
   getWithSearch: async (sheetName, searchTerm) => {
-    const response = await fetch(${APPS_SCRIPT_URL}?sheet=&search=);
+    const response = await fetch(`${APPS_SCRIPT_URL}?sheet=${sheetName}&search=${searchTerm}`);
     const result = await response.json();
     return result.success ? result.data : [];
   },
 
   testConnection: async () => {
     try {
-      const response = await fetch(${APPS_SCRIPT_URL}?sheet=Users);
+      const response = await fetch(`${APPS_SCRIPT_URL}?sheet=Users`);
       const result = await response.json();
       return result.success === true;
     } catch {
