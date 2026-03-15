@@ -143,9 +143,6 @@ export default function Layout() {
                     </div>
                   );
                 }) || <p className="text-gray-400">No classes today</p>}
-                {schedule?.filter(s => s.dayOfWeek === new Date().toLocaleDateString('en-US', { weekday: 'long' })).length === 0 && (
-                  <p className="text-gray-400">No classes today</p>
-                )}
               </GlassCard>
             </div>
 

@@ -1,72 +1,55 @@
-﻿// OPENSHEET API SERVICE - 100% FREE!
-const OPENSHEET_URL = 'https://opensheet.elk.sh/1d9EHYGZpSxejx8cxPzAV9RJ4OibZCGZHo9CUy-hc7_A';
+﻿// GOOGLE APPS SCRIPT API - 100% FREE!
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzi52wm_4gc169SLMkNtLcydSDFsz_KjuJEOp94I8stnhE0P3YC8Nfl7_jVbtqICxHqiA/exec';
 
 export const api = {
-  // Users (for login)
-  getUsers: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Users`);
-    return response.json();
+  // Helper function for all sheets
+  fetchSheet: async (sheetName) => {
+    try {
+      const response = await fetch(${APPS_SCRIPT_URL}?sheet=);
+      const result = await response.json();
+      
+      if (result.success) {
+        return result.data;
+      } else {
+        console.error(Error fetching :, result.error);
+        return [];
+      }
+    } catch (error) {
+      console.error(Error fetching :, error);
+      return [];
+    }
   },
 
-  // Students
-  getStudents: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Students`);
-    return response.json();
+  // Individual sheet functions
+  getUsers: async () => api.fetchSheet('Users'),
+  getStudents: async () => api.fetchSheet('Students'),
+  getCourses: async () => api.fetchSheet('Courses'),
+  getEnrollments: async () => api.fetchSheet('Enrollments'),
+  getAttendance: async () => api.fetchSheet('AttendanceSummary'),
+  getMaterials: async () => api.fetchSheet('Materials'),
+  getSchedule: async () => api.fetchSheet('Schedule'),
+  getDeadlines: async () => api.fetchSheet('Deadlines'),
+  getAnnouncements: async () => api.fetchSheet('Announcements'),
+  getStudentNotifications: async () => api.fetchSheet('StudentNotifications'),
+
+  // Advanced features using the metadata
+  getWithFilter: async (sheetName, filterBy, filterValue) => {
+    const response = await fetch(${APPS_SCRIPT_URL}?sheet=&filterBy=&filterValue=);
+    const result = await response.json();
+    return result.success ? result.data : [];
   },
 
-  // Courses
-  getCourses: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Courses`);
-    return response.json();
+  getWithSearch: async (sheetName, searchTerm) => {
+    const response = await fetch(${APPS_SCRIPT_URL}?sheet=&search=);
+    const result = await response.json();
+    return result.success ? result.data : [];
   },
 
-  // Enrollments
-  getEnrollments: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Enrollments`);
-    return response.json();
-  },
-
-  // Attendance
-  getAttendance: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/AttendanceSummary`);
-    return response.json();
-  },
-
-  // Materials
-  getMaterials: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Materials`);
-    return response.json();
-  },
-
-  // Schedule
-  getSchedule: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Schedule`);
-    return response.json();
-  },
-
-  // Deadlines
-  getDeadlines: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Deadlines`);
-    return response.json();
-  },
-
-  // Announcements
-  getAnnouncements: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/Announcements`);
-    return response.json();
-  },
-
-  // Notifications
-  getStudentNotifications: async () => {
-    const response = await fetch(`${OPENSHEET_URL}/StudentNotifications`);
-    return response.json();
-  },
-
-  // Test connection
   testConnection: async () => {
     try {
-      const response = await fetch(`${OPENSHEET_URL}/Users`);
-      return response.ok;
+      const response = await fetch(${APPS_SCRIPT_URL}?sheet=Users);
+      const result = await response.json();
+      return result.success === true;
     } catch {
       return false;
     }
