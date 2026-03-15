@@ -1,6 +1,9 @@
 ﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { useAuth } from './AuthContext';
+import { AuthContext } from './AuthContext';
+
+// Export the context so hooks can use it
+export const DataContext = createContext<any>(null);
 
 interface DataContextType {
   student: any;
@@ -16,10 +19,8 @@ interface DataContextType {
   refreshData: () => Promise<void>;
 }
 
-const DataContext = createContext<DataContextType | undefined>(undefined);
-
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user } = useContext(AuthContext);
   const [student, setStudent] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -79,10 +80,4 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
     </DataContext.Provider>
   );
-};
-
-export const useData = () => {
-  const context = useContext(DataContext);
-  if (!context) throw new Error('useData must be used within DataProvider');
-  return context;
 };
