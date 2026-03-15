@@ -1,121 +1,76 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { User, Student, AuthState } from '../types';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import type { User, Student, AuthUser } from '../types';
 
-interface AuthContextType extends AuthState {
+interface AuthContextType {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  loading: boolean;
 }
-
-const initialState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  student: null,
-  loading: true,
-  error: null,
-};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>(initialState);
-  const [storedUser, setStoredUser, removeStoredUser] = useLocalStorage<User | null>('au_user', null);
-  const [storedStudent, setStoredStudent, removeStoredStudent] = useLocalStorage<Student | null>('au_student', null);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Check for existing session on mount
   useEffect(() => {
-    const checkSession = async () => {
-      if (storedUser && storedStudent) {
-        setState({
-          isAuthenticated: true,
-          user: storedUser,
-          student: storedStudent,
-          loading: false,
-          error: null,
-        });
-      } else {
-        setState((prev) => ({ ...prev, loading: false }));
-      }
-    };
-
-    checkSession();
-  }, [storedUser, storedStudent]);
-
-  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      // Authenticate user
-      const user = await api.authenticateUser(email, password);
-      
-      if (!user) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: 'Invalid email or password',
-        }));
-        return false;
-      }
-
-      // Get student information
-      const student = await api.getStudentByEmail(email);
-      
-      if (!student) {
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: 'Student profile not found',
-        }));
-        return false;
-      }
-
-      // Store in localStorage
-      setStoredUser(user);
-      setStoredStudent(student);
-
-      // Update state
-      setState({
-        isAuthenticated: true,
-        user,
-        student,
-        loading: false,
-        error: null,
-      });
-
-      return true;
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: 'An error occurred during login',
-      }));
-      return false;
+    const savedUser = localStorage.getItem('auy_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
     }
-  }, [setStoredUser, setStoredStudent]);
+    setLoading(false);
+  }, []);
 
-  const logout = useCallback(() => {
-    removeStoredUser();
-    removeStoredStudent();
-    setState({
-      ...initialState,
-      loading: false,
-    });
-  }, [removeStoredUser, removeStoredStudent]);
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      
+      // Get users from Users sheet
+      const users = await api.getUsers();
+      const matchedUser = users.find((u: User) => u.email === email && u.password === password);
+      
+      if (!matchedUser) return false;
+
+      // Get student details from Students sheet
+      const students = await api.getStudents();
+      const student = students.find((s: Student) => s.email === email);
+
+      const authUser: AuthUser = {
+        email: matchedUser.email,
+        studentId: matchedUser.studentId || student?.studentId || '',
+        studentName: student?.studentName,
+        major: student?.major
+      };
+
+      setUser(authUser);
+      localStorage.setItem('auy_user', JSON.stringify(authUser));
+      return true;
+
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('auy_user');
+  };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
-}
-
-export default AuthContext;
+};

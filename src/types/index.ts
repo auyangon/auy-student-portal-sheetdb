@@ -1,180 +1,114 @@
-// User authentication types
-export interface User {
-  id: string;
+﻿export interface User {
   email: string;
   password: string;
-  role: 'student' | 'admin' | 'faculty';
-  createdAt: string;
+  studentId?: string;
+  role?: string;
 }
 
-// Student information
 export interface Student {
   studentId: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  gender: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
+  studentName: string;
   major: string;
-  minor: string;
-  enrollmentDate: string;
-  expectedGraduation: string;
-  gpa: number;
-  totalCredits: number;
-  academicStanding: 'Good Standing' | 'Probation' | 'Dean\'s List';
-  advisorName: string;
-  advisorEmail: string;
-  profileImage: string;
+  studyMode: string;
+  status: string;
 }
 
-// Course information
 export interface Course {
   courseId: string;
-  courseCode: string;
   courseName: string;
-  description: string;
   credits: number;
-  department: string;
-  instructor: string;
-  instructorEmail: string;
-  semester: string;
-  year: number;
-  schedule: string;
-  room: string;
-  building: string;
-  maxEnrollment: number;
-  currentEnrollment: number;
+  teacher: string;
   googleClassroomLink: string;
-  syllabusLink: string;
-  status: 'Active' | 'Completed' | 'Upcoming';
 }
 
-// Student enrollment in courses
 export interface Enrollment {
   enrollmentId: string;
   studentId: string;
+  studentName: string;
+  email: string;
   courseId: string;
-  enrollmentDate: string;
-  status: 'Active' | 'Completed' | 'Dropped' | 'Withdrawn';
+  courseName: string;
+  teacherName: string;
+  credits: number;
   grade: string;
-  gradePoints: number;
-  midtermGrade: string;
-  finalGrade: string;
-  assignmentScore: number;
-  quizScore: number;
-  participationScore: number;
-}
-
-// Attendance summary
-export interface AttendanceSummary {
-  attendanceId: string;
-  studentId: string;
-  courseId: string;
-  totalClasses: number;
-  classesAttended: number;
-  classesAbsent: number;
-  classesExcused: number;
-  attendancePercentage: number;
+  googleClassroomLink: string;
+  attendance?: string;
   lastUpdated: string;
 }
 
-// Course materials
+export interface Attendance {
+  studentId: string;
+  courseId: string;
+  totalClasses: number;
+  present: number;
+  late: number;
+  absent: number;
+  percentage: number;
+  lastUpdated: string;
+}
+
 export interface Material {
   materialId: string;
   courseId: string;
   title: string;
+  type: string;
   description: string;
-  type: 'Lecture Notes' | 'Slides' | 'Video' | 'Assignment' | 'Reading' | 'Quiz' | 'Exam' | 'Resource';
-  fileLink: string;
-  fileSize: string;
+  fileUrl: string;
   uploadedBy: string;
   uploadDate: string;
-  weekNumber: number;
+  week: string;
   tags: string;
-  isRequired: boolean;
-  dueDate: string;
 }
 
-// Schedule entries
-export interface ScheduleEntry {
+export interface Schedule {
   scheduleId: string;
   courseId: string;
-  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  dayOfWeek: string;
   startTime: string;
   endTime: string;
   room: string;
-  building: string;
-  type: 'Lecture' | 'Lab' | 'Tutorial' | 'Seminar' | 'Office Hours';
   instructor: string;
-  isRecurring: boolean;
-  notes: string;
+  type: string;
+  recurring: string;
+  startDate: string;
+  endDate: string;
 }
 
-// Deadlines
 export interface Deadline {
   deadlineId: string;
   courseId: string;
   title: string;
-  description: string;
+  type: string;
   dueDate: string;
   dueTime: string;
-  type: 'Assignment' | 'Quiz' | 'Exam' | 'Project' | 'Presentation' | 'Report';
   weight: number;
-  status: 'Upcoming' | 'Due Soon' | 'Overdue' | 'Completed';
+  description: string;
   submissionLink: string;
-  maxScore: number;
 }
 
-// Announcements
 export interface Announcement {
-  announcementId: string;
-  courseId: string;
+  id: string;
   title: string;
   content: string;
+  date: string;
   author: string;
-  authorRole: string;
-  publishDate: string;
-  priority: 'Low' | 'Normal' | 'High' | 'Urgent';
-  targetAudience: 'ALL' | string; // 'ALL' or specific courseId
-  expiryDate: string;
-  attachmentLink: string;
-  category: 'General' | 'Academic' | 'Event' | 'Administrative' | 'Emergency';
+  priority: string;
+  category: string;
+  targetCourses: string;
 }
 
-// Student notifications
 export interface StudentNotification {
-  notificationId: string;
   studentId: string;
+  email: string;
   announcementId: string;
-  isRead: boolean;
+  read: string;
   readAt: string;
-  isArchived: boolean;
 }
 
-// Auth context types
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: User | null;
-  student: Student | null;
-  loading: boolean;
-  error: string | null;
-}
-
-// Data context types
-export interface DataState {
-  courses: Course[];
-  enrollments: Enrollment[];
-  attendanceSummary: AttendanceSummary[];
-  materials: Material[];
-  schedule: ScheduleEntry[];
-  deadlines: Deadline[];
-  announcements: Announcement[];
-  notifications: StudentNotification[];
-  loading: boolean;
-  lastUpdated: Date | null;
-  error: string | null;
+export interface AuthUser {
+  email: string;
+  studentId: string;
+  studentName?: string;
+  major?: string;
 }

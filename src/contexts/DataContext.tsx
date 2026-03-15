@@ -1,150 +1,138 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import {
-  Course,
-  Enrollment,
-  AttendanceSummary,
-  DataState,
-} from '../types';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from './AuthContext';
+import type { Student, Course, Enrollment, Attendance, Material, Schedule, Deadline, Announcement } from '../types';
 
-interface DataContextType extends DataState {
+interface DataContextType {
+  student: Student | null;
+  courses: Course[];
+  enrollments: Enrollment[];
+  attendance: Attendance[];
+  materials: Material[];
+  schedule: Schedule[];
+  deadlines: Deadline[];
+  announcements: Announcement[];
+  loading: boolean;
+  error: string | null;
   refreshData: () => Promise<void>;
-  markNotificationRead: (notificationId: string) => void;
-  getUnreadCount: () => number;
-  getCourseById: (courseId: string) => Course | undefined;
-  getEnrollmentByCourseId: (courseId: string) => Enrollment | undefined;
-  getAttendanceByCourseId: (courseId: string) => AttendanceSummary | undefined;
 }
-
-const initialState: DataState = {
-  courses: [],
-  enrollments: [],
-  attendanceSummary: [],
-  materials: [],
-  schedule: [],
-  deadlines: [],
-  announcements: [],
-  notifications: [],
-  loading: true,
-  lastUpdated: null,
-  error: null,
-};
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-const POLL_INTERVAL = parseInt(import.meta.env.VITE_POLL_INTERVAL || '30000', 10);
+export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  const [student, setStudent] = useState<Student | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [attendance, setAttendance] = useState<Attendance[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [schedule, setSchedule] = useState<Schedule[]>([]);
+  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { student, isAuthenticated } = useAuth();
-  const [state, setState] = useState<DataState>(initialState);
-
-  const fetchData = useCallback(async () => {
-    if (!student) return;
+  const fetchData = async () => {
+    if (!user) return;
 
     try {
-      // First get enrollments to know which courses the student is in
-      const enrollments = await api.getStudentEnrollments(student.studentId);
-      const courseIds = enrollments.map((e) => e.courseId);
+      setLoading(true);
+      setError(null);
 
-      // Fetch all data
-      const data = await api.fetchAllStudentData(student.studentId, courseIds);
+      // Fetch all data in parallel
+      const [
+        students,
+        coursesData,
+        enrollmentsData,
+        attendanceData,
+        materialsData,
+        scheduleData,
+        deadlinesData,
+        announcementsData
+      ] = await Promise.all([
+        api.getStudents(),
+        api.getCourses(),
+        api.getEnrollments(),
+        api.getAttendance(),
+        api.getMaterials(),
+        api.getSchedule(),
+        api.getDeadlines(),
+        api.getAnnouncements()
+      ]);
 
-      setState({
-        ...data,
-        loading: false,
-        lastUpdated: new Date(),
-        error: null,
-      });
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: 'Failed to load data',
-      }));
+      // Get current student
+      const currentStudent = students.find((s: Student) => s.email === user.email);
+      setStudent(currentStudent || null);
+
+      if (currentStudent) {
+        // Get enrollments for this student
+        const studentEnrollments = enrollmentsData.filter((e: Enrollment) => e.studentId === currentStudent.studentId);
+        setEnrollments(studentEnrollments);
+
+        // Get course IDs from enrollments
+        const courseIds = studentEnrollments.map((e: Enrollment) => e.courseId);
+        
+        // Get courses
+        const studentCourses = coursesData.filter((c: Course) => courseIds.includes(c.courseId));
+        setCourses(studentCourses);
+
+        // Get attendance
+        const studentAttendance = attendanceData.filter((a: Attendance) => a.studentId === currentStudent.studentId);
+        setAttendance(studentAttendance);
+
+        // Get materials for student's courses
+        const courseMaterials = materialsData.filter((m: Material) => courseIds.includes(m.courseId));
+        setMaterials(courseMaterials);
+
+        // Get schedule for student's courses
+        const courseSchedule = scheduleData.filter((s: Schedule) => courseIds.includes(s.courseId));
+        setSchedule(courseSchedule);
+
+        // Get deadlines for student's courses
+        const courseDeadlines = deadlinesData.filter((d: Deadline) => 
+          d.courseId === 'ALL' || courseIds.includes(d.courseId)
+        );
+        setDeadlines(courseDeadlines);
+      }
+
+      // Set announcements (filter by target courses later)
+      setAnnouncements(announcementsData);
+
+    } catch (err) {
+      setError('Failed to load data');
+      console.error('Data fetch error:', err);
+    } finally {
+      setLoading(false);
     }
-  }, [student]);
+  };
 
-  // Initial fetch and polling
   useEffect(() => {
-    if (!isAuthenticated || !student) {
-      setState(initialState);
-      return;
-    }
-
-    // Initial fetch
     fetchData();
-
-    // Set up polling
-    const interval = setInterval(fetchData, POLL_INTERVAL);
-
+    const interval = setInterval(fetchData, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
-  }, [isAuthenticated, student, fetchData]);
-
-  const refreshData = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true }));
-    await fetchData();
-  }, [fetchData]);
-
-  const markNotificationRead = useCallback((notificationId: string) => {
-    setState((prev) => ({
-      ...prev,
-      notifications: prev.notifications.map((n) =>
-        n.notificationId === notificationId
-          ? { ...n, isRead: true, readAt: new Date().toISOString().split('T')[0] }
-          : n
-      ),
-    }));
-  }, []);
-
-  const getUnreadCount = useCallback(() => {
-    return state.notifications.filter((n) => !n.isRead && !n.isArchived).length;
-  }, [state.notifications]);
-
-  const getCourseById = useCallback(
-    (courseId: string) => {
-      return state.courses.find((c) => c.courseId === courseId);
-    },
-    [state.courses]
-  );
-
-  const getEnrollmentByCourseId = useCallback(
-    (courseId: string) => {
-      return state.enrollments.find((e) => e.courseId === courseId);
-    },
-    [state.enrollments]
-  );
-
-  const getAttendanceByCourseId = useCallback(
-    (courseId: string) => {
-      return state.attendanceSummary.find((a) => a.courseId === courseId);
-    },
-    [state.attendanceSummary]
-  );
+  }, [user]);
 
   return (
-    <DataContext.Provider
-      value={{
-        ...state,
-        refreshData,
-        markNotificationRead,
-        getUnreadCount,
-        getCourseById,
-        getEnrollmentByCourseId,
-        getAttendanceByCourseId,
-      }}
-    >
+    <DataContext.Provider value={{
+      student,
+      courses,
+      enrollments,
+      attendance,
+      materials,
+      schedule,
+      deadlines,
+      announcements,
+      loading,
+      error,
+      refreshData: fetchData
+    }}>
       {children}
     </DataContext.Provider>
   );
-}
+};
 
-export function useData() {
+export const useData = () => {
   const context = useContext(DataContext);
-  if (context === undefined) {
-    throw new Error('useData must be used within a DataProvider');
-  }
+  if (!context) throw new Error('useData must be used within DataProvider');
   return context;
-}
-
-export default DataContext;
+};
