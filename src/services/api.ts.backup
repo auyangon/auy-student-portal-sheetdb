@@ -43,7 +43,7 @@ export const api = {
     return response.json();
   },
 
-  // Get list of all available sheets
+  // Optional: Get list of all available sheets
   getSheets: async () => {
     const response = await fetch(`${SHEETDB_URL}/sheets`);
     return response.json();
