@@ -1,5 +1,5 @@
 ﻿import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -113,3 +113,4 @@ const styles = {
 };
 
 export default Login;
+
