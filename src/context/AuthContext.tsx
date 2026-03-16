@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       studentId: student.studentId,
       major: student.major,
       year: 1, // You can compute from enrollment date if available
-      avatar: student.studentName.split(' ').map(n => n[0]).join('').slice(0,2),
+      avatar: student.studentName ? student.studentName.split(" ").map(n => n[0]).join("").slice(0,2) : "??",
       gpa: 0, // To be computed from enrollments later
       credits: 0,
       totalCredits: 120, // Default, can be customized
@@ -84,3 +84,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
+

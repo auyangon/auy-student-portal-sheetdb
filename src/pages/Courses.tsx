@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HiX, HiUser, HiLocationMarker, HiClock, HiUsers, HiStar } from 'react-icons/hi';
 import { useData } from '../context/DataContext';
@@ -135,7 +135,7 @@ export default function Courses() {
 
   const totalGPA = courses.length
     ? (courses.reduce((s, c) => s + c.gradePoints * c.credits, 0) / courses.reduce((s, c) => s + c.credits, 0)).toFixed(2)
-    : '—';
+    : 'â€”';
 
   return (
     <motion.div
@@ -146,7 +146,7 @@ export default function Courses() {
       <motion.div variants={fadeUp} className="glass-card rounded-3xl p-6 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between">
         <div>
           <h1 className="text-white font-bold text-2xl mb-1">My Courses</h1>
-          <p className="text-white/40 text-sm">Semester 2 · AY 2023–2024 · {courses.length} courses enrolled</p>
+          <p className="text-white/40 text-sm">Semester 2 Â· AY 2023â€“2024 Â· {courses.length} courses enrolled</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="glass rounded-2xl px-5 py-3 text-center">
@@ -214,7 +214,7 @@ export default function Courses() {
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
                   style={{ background: course.color }}>
-                  {course.instructor.split(' ').filter((_, i2) => i2 > 0).map(w => w[0]).join('').slice(0,2)}
+                  {course?.instructor?.split(' ').filter((_, i2) => i2 > 0).map(w => w[0]).join('').slice(0,2)}
                 </div>
                 <span className="text-white/50 text-xs">{course.instructor}</span>
                 <span className="ml-auto text-white/30 text-xs">{course.credits} cr</span>
@@ -257,3 +257,4 @@ export default function Courses() {
     </motion.div>
   );
 }
+
