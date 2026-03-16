@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HiBell, HiX, HiExclamationCircle, HiInformationCircle,
@@ -26,9 +26,9 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string
 
 function AnnouncementModal({ ann, onClose }: { ann: Announcement; onClose: () => void }) {
   const { markAnnouncementRead } = useData();
-  const pri = PRIORITY_CONFIG[ann.priority];
+  const pri = PRIORITY_CONFIG[ann.priority] ?? { icon: HiInformationCircle, color: "#94a3b8", label: "Info" };
   const PriIcon = pri.icon;
-  const cat = CATEGORY_COLORS[ann.category];
+  const cat = CATEGORY_COLORS[ann.category] ?? { bg: "rgba(255,255,255,0.1)", text: "#ffffff", border: "rgba(255,255,255,0.2)" };
 
   const handleOpen = () => {
     markAnnouncementRead(ann.id);
@@ -102,9 +102,9 @@ function AnnouncementModal({ ann, onClose }: { ann: Announcement; onClose: () =>
 }
 
 function AnnouncementCard({ ann, onClick, delay }: { ann: Announcement; onClick: () => void; delay: number }) {
-  const pri = PRIORITY_CONFIG[ann.priority];
+  const pri = PRIORITY_CONFIG[ann.priority] ?? { icon: HiInformationCircle, color: "#94a3b8", label: "Info" };
   const PriIcon = pri.icon;
-  const cat = CATEGORY_COLORS[ann.category];
+  const cat = CATEGORY_COLORS[ann.category] ?? { bg: "rgba(255,255,255,0.1)", text: "#ffffff", border: "rgba(255,255,255,0.2)" };
 
   return (
     <motion.div
@@ -176,7 +176,7 @@ export default function Announcements() {
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
             <h1 className="text-white font-bold text-2xl mb-1">Announcements</h1>
-            <p className="text-white/40 text-sm">{announcements.length} total · {unreadCount} unread</p>
+            <p className="text-white/40 text-sm">{announcements.length} total Â· {unreadCount} unread</p>
           </div>
           {unreadCount > 0 && (
             <motion.button
@@ -301,3 +301,4 @@ export default function Announcements() {
     </motion.div>
   );
 }
+

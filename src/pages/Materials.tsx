@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   HiDownload, HiPlay, HiDocument, HiPresentationChartBar,
@@ -20,13 +20,13 @@ const TYPE_CONFIG = {
 };
 
 function MaterialCard({ material, delay }: { material: Material; delay: number }) {
-  const cfg = TYPE_CONFIG[material.type];
+  const cfg = TYPE_CONFIG[material.type] ?? { icon: HiDocument, color: "#ffffff", bg: "rgba(255,255,255,0.1)", label: "File" };
   const Icon = cfg.icon;
 
   const handleDownload = () => {
     toast.success(`Downloading "${material.title}"`, {
       style: { background: 'rgba(20,20,30,0.95)', color: '#fff', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '14px' },
-      icon: '⬇️',
+      icon: 'â¬‡ï¸',
     });
   };
 
@@ -48,7 +48,7 @@ function MaterialCard({ material, delay }: { material: Material; delay: number }
         <p className="text-white/85 text-sm font-medium truncate mb-0.5">{material.title}</p>
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-white/40 text-xs">{material.courseName}</span>
-          <span className="text-white/20 text-xs">·</span>
+          <span className="text-white/20 text-xs">Â·</span>
           <span className="text-white/40 text-xs">{material.instructor}</span>
         </div>
       </div>
@@ -109,7 +109,7 @@ export default function Materials() {
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-5">
           <div>
             <h1 className="text-white font-bold text-2xl mb-1">Course Materials</h1>
-            <p className="text-white/40 text-sm">{materials.length} files · All your course resources in one place</p>
+            <p className="text-white/40 text-sm">{materials.length} files Â· All your course resources in one place</p>
           </div>
           <div className="relative w-full sm:w-64">
             <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
@@ -196,3 +196,4 @@ export default function Materials() {
     </motion.div>
   );
 }
+
